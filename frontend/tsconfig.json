@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
-    "module": "ESNext", // or "NodeNext"
-    "moduleResolution": "Bundler" ,
     "noUncheckedIndexedAccess": true,
     "target": "es5",
+    "types": [],
     "lib": [
       "dom",
       "dom.iterable",
