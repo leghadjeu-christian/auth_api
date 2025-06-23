@@ -27,7 +27,7 @@ export default function Login() {
     e.preventDefault();
     setError("");
     try {
-      const response = await api.post("register", form);
+      const response = await api.post("login", form);
         navigate("/profile");
       
     } catch (err: any) {
