@@ -21,6 +21,7 @@ pub enum Role {
 pub struct LoginRequest {
     pub email: String,
     pub password: String,
+    pub(crate) role: String,
 }
 
 #[derive(Debug, Serialize, ToSchema)]

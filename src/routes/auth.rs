@@ -7,13 +7,13 @@ use serde_json::json;
 use utoipa::{OpenApi, ToSchema};
 
 use crate::middleware::auth::Claims;
-use crate::models::{LoginRequest, LoginResponse, Role, User};
+use crate::models::{LoginRequest, LoginResponse, RegisterRequest, Role, User};
 use crate::AppState;
 
 const JWT_SALT: &[u8; 16] = b"your-token-perso";
 
 #[derive(OpenApi)]
-#[openapi(paths(login), components(schemas(LoginRequest, LoginResponse)))]
+#[openapi(paths(login), components(schemas(LoginRequest, LoginResponse, RegisterRequest)))]
 pub struct AuthApi;
 
 #[utoipa::path(
@@ -60,17 +60,11 @@ pub async fn login(
     return (StatusCode::OK, Json(LoginResponse { token })).into_response();
 }
 
-#[derive(Deserialize, ToSchema)]
-pub struct RegisterRequest {
-    pub username: String,
-    pub password: String,
-    pub confirm_password: String,
-}
 
 #[utoipa::path(
     post,
     path = "/register",
-    request_body = LoginRequest,
+    request_body = RegisterRequest,
     responses(
         (status = 200, description = "Registration successful"),
         (status = 400, description = "Bad request")
@@ -78,7 +72,7 @@ pub struct RegisterRequest {
 )]
 pub async fn register(
     State(mut state): State<AppState>,
-    Json(payload): Json<LoginRequest>,
+    Json(payload): Json<RegisterRequest>,
 ) -> impl IntoResponse {
     if payload.password.is_empty() {
         return (
@@ -102,8 +96,9 @@ pub async fn register(
         id: users.len() as i32 + 1,
         email: payload.email,
         password: hashed_password.to_string(),
-        first_name: payload.
         role: Role::User,
+        first_name: payload.first_name, // Provide a default or extract from payload if available
+        last_name: payload.last_name,  // Provide a default or extract from payload if available
     };
     users.push(new_user);
 

@@ -39,6 +39,8 @@ pub async fn auth_middleware(
         email: token_data.claims.sub,
         password: String::new(),
         role: token_data.claims.role,
+        first_name: String::from("placeholder_first_name"),
+        last_name: String::from("placeholder_last_name"),
     };
 
     let mut request = req;
