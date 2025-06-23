@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Rust
-        uses:  actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
@@ -35,22 +35,10 @@ jobs:
         run: |
           cd frontend
           npm ci
-          CI='' npm run build
+          npm run build
 
-      - name: Deploy to server and restart services
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Deploy frontend to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            cd /path/to/your/app
-            git pull origin master
-            cargo build --release
-            cd frontend
-            npm ci
-            npm run build
-            # Restart your backend service (adjust as needed)
-            systemctl --user restart auth_api.service
-            # Optionally, restart your frontend service if using a process manager or web server
-            # systemctl --user restart frontend.service
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./frontend/build
