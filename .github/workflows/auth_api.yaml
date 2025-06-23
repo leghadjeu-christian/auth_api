@@ -1,5 +1,10 @@
 name: Deploy Rust Auth API and Frontend
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 on:
   push:
     branches:
