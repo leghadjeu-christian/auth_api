@@ -3,10 +3,10 @@ name: Deploy Rust Auth API and Frontend
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
   workflow_dispatch:
 
 jobs:
@@ -44,7 +44,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd /path/to/your/app
-            git pull origin main
+            git pull origin master
             cargo build --release
             cd frontend
             npm ci
