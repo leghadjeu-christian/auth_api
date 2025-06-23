@@ -36,3 +36,23 @@ pub async fn admin_route(Extension(user): Extension<Arc<User>>) -> impl IntoResp
         ).into_response()
     }
 }
+
+#[utoipa::path(
+    get,
+    path = "/user",
+    responses(
+        (status = 200, description = "User access granted", body = User),
+        (status = 403, description = "Forbidden")
+    ),
+    security(("api_key" = []))
+)]
+pub async fn user_route(Extension(user): Extension<Arc<User>>) -> impl IntoResponse {
+    if user.role == Role::User {
+        (StatusCode::OK, Json(user)).into_response()
+    } else {
+        (
+            StatusCode::FORBIDDEN,
+            Json(json!({"error": "User access required"})),
+        ).into_response()
+    }
+}
