@@ -1,19 +1,23 @@
 use axum::extract::State;
 use axum::{http::StatusCode, response::IntoResponse, Json};
-use bcrypt::hash_with_salt;
+use bcrypt::{hash, verify, DEFAULT_COST};
 use jsonwebtoken::{encode, EncodingKey, Header};
-use serde::Deserialize;
 use serde_json::json;
-use utoipa::{OpenApi, ToSchema};
+use sqlx::query_as;
+use utoipa::OpenApi;    
 
 use crate::middleware::auth::Claims;
-use crate::models::{LoginRequest, LoginResponse, RegisterRequest, Role, User};
+use crate::models::{LoginRequest, LoginResponse, RegisterRequest, User};
 use crate::AppState;
 
-const JWT_SALT: &[u8; 16] = b"your-token-perso";
+use crate::models::user::Role;
+use std::str::FromStr;
 
 #[derive(OpenApi)]
-#[openapi(paths(login), components(schemas(LoginRequest, LoginResponse, RegisterRequest)))]
+#[openapi(
+    paths(login, register),
+    components(schemas(LoginRequest, LoginResponse, RegisterRequest, User))
+)]
 pub struct AuthApi;
 
 #[utoipa::path(
@@ -26,81 +30,88 @@ pub struct AuthApi;
     )
 )]
 pub async fn login(
-    State(mut state): State<AppState>,
+    State(state): State<AppState>,
     Json(payload): Json<LoginRequest>,
 ) -> impl IntoResponse {
-    let users = state.users.lock().unwrap();
+    let user = query_as::<_, User>("SELECT * FROM users WHERE email = $1")
+        .bind(&payload.email)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap();
 
-    //check if the user exists and the password matches
-    let user = users.iter().find(|u| u.email == payload.email);
-    if user.is_none()
-        || bcrypt::verify(payload.password.as_bytes(), &user.unwrap().password).ok() != Some(true)
-    {
-        return (
-            StatusCode::UNAUTHORIZED,
-            Json(json!({"error": "Invalid credentials"})),
-        )
-            .into_response();
+        if let Some(user) = user {
+            if verify(&payload.password, &user.password).unwrap_or(false) {
+                let role = Role::from_str(&user.role).unwrap(); // Convert String to Role
+                let claims = Claims {
+                    sub: user.email.clone(),
+                    role, // Now a Role, not a String
+                    exp: (chrono::Utc::now() + chrono::Duration::minutes(10)).timestamp() as usize,
+                };
+            let config = state.config.clone();
+            let token = encode(
+                &Header::default(),
+                &claims,
+                &EncodingKey::from_secret(config.jwt_secret.as_ref()),
+            )
+            .unwrap();
+            return (StatusCode::OK, Json(LoginResponse { token })).into_response();
+        }
     }
-
-    let claims = Claims {
-        sub: payload.email.clone(),
-        role: user.unwrap().role.clone(),
-        exp: (chrono::Utc::now() + chrono::Duration::hours(24)).timestamp() as usize,
-    };
-
-    let config = state.config.clone();
-    let token = encode(
-        &Header::default(),
-        &claims,
-        &EncodingKey::from_secret(config.jwt_secret.as_ref()),
+    (
+        StatusCode::UNAUTHORIZED,
+        Json(json!({"error": "Invalid credentials"})),
     )
-    .unwrap();
-
-    return (StatusCode::OK, Json(LoginResponse { token })).into_response();
+        .into_response()
 }
-
 
 #[utoipa::path(
     post,
     path = "/register",
     request_body = RegisterRequest,
     responses(
-        (status = 200, description = "Registration successful"),
+        (status = 201, description = "Registration successful"),
         (status = 400, description = "Bad request")
     )
 )]
 pub async fn register(
-    State(mut state): State<AppState>,
+    State(state): State<AppState>,
     Json(payload): Json<RegisterRequest>,
 ) -> impl IntoResponse {
     if payload.password.is_empty() {
         return (
             StatusCode::BAD_REQUEST,
-            Json(json!({"error": "Passwords do not match"})),
+            Json(json!({"error": "Password cannot be empty"})),
         )
             .into_response();
     }
 
-    let config = state.config.clone();
-    let hashed_password = hash_with_salt(
-        payload.password.as_bytes(),
-        bcrypt::DEFAULT_COST,
-        config.jwt_salt,
-    )
-    .unwrap();
+    // Check if user already exists
+    let existing: Option<(i32,)> = sqlx::query_as("SELECT id FROM users WHERE email = $1")
+        .bind(&payload.email)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap();
 
-    let mut users = state.users.lock().unwrap();
+    if existing.is_some() {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(json!({"error": "Email already exists"})),
+        )
+            .into_response();
+    }
 
-    let new_user = crate::models::User {
-        id: users.len() as i32 + 1,
-        email: payload.email,
-        password: hashed_password.to_string(),
-        role: Role::User,
-        first_name: payload.first_name, // Provide a default or extract from payload if available
-        last_name: payload.last_name,  // Provide a default or extract from payload if available
-    };
-    users.push(new_user);
+    let hashed_password = hash(&payload.password, DEFAULT_COST).unwrap();
+
+    // Insert new user
+    sqlx::query("INSERT INTO users (email, password, first_name, last_name, role) VALUES ($1, $2, $3, $4, $5)")
+        .bind(&payload.email)
+        .bind(&hashed_password)
+        .bind(&payload.first_name)
+        .bind(&payload.last_name)
+        .bind("User")
+        .execute(&state.db)
+        .await
+        .unwrap();
 
     (
         StatusCode::CREATED,

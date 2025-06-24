@@ -7,8 +7,9 @@ use axum::{
 use serde_json::json;
 use std::sync::Arc;
 use utoipa::OpenApi;
-
-use crate::models::{Role, User};
+use crate::models::user::Role;
+use crate::models::User;
+// use crate::models::{Role, User};
 
 #[derive(OpenApi)]
 #[openapi(
@@ -27,7 +28,7 @@ pub struct ProtectedApi;
     security(("api_key" = []))
 )]
 pub async fn admin_route(Extension(user): Extension<Arc<User>>) -> impl IntoResponse {
-    if user.role == Role::Admin {
+    if user.role == Role::Admin.to_string() {
         (StatusCode::OK, Json(user)).into_response()
     } else {
         (
@@ -46,8 +47,9 @@ pub async fn admin_route(Extension(user): Extension<Arc<User>>) -> impl IntoResp
     ),
     security(("api_key" = []))
 )]
+
 pub async fn user_route(Extension(user): Extension<Arc<User>>) -> impl IntoResponse {
-    if user.role == Role::User {
+    if user.role == "User" {
         (StatusCode::OK, Json(user)).into_response()
     } else {
         (

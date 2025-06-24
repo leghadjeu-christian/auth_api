@@ -19,7 +19,7 @@ export default function Profile() {
     }
 
     try {
-    //   jwt_decode(token); // Just to check validity
+      // jwt_decode(token); // Just to check validity
       ProtectedService.adminRoute()
         .then((userData: User) => {
           setUser(userData);

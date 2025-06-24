@@ -14,4 +14,5 @@ utoipa-swagger-ui = { version = "9.0.2", features = ["axum"] }
 tokio = { version = "1.45.1", features = ["full"] }
 tower-http = { version = "0.6.6", features = ["cors"] }
 serde_json = "1.0.140"
-dotenvy = "0.15"
+dotenvy = "0.15.7"
+sqlx = { version = "0.8.6", features = ["runtime-tokio-native-tls", "postgres", "macros", "time"] }

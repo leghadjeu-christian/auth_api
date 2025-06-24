@@ -4,8 +4,10 @@ use axum::{
 use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-
-use crate::{models::{Role, User}, AppState};
+use crate::models::user::Role;
+use crate::AppState;
+use crate::models::User;
+// use crate::{models::{Role, User}, AppState};
 
 #[derive(Serialize, Deserialize)]
 pub struct Claims {
@@ -38,10 +40,10 @@ pub async fn auth_middleware(
         id: 1, // In production, fetch from DB
         email: token_data.claims.sub,
         password: String::new(),
-        role: token_data.claims.role,
+        role: token_data.claims.role.to_string(), // Convert Role to String
         first_name: String::from("placeholder_first_name"),
         last_name: String::from("placeholder_last_name"),
-    };
+        };
 
     let mut request = req;
     request.extensions_mut().insert(Arc::new(user));
