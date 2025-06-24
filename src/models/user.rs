@@ -9,6 +9,7 @@ use std::str::FromStr;
 pub struct User {
     pub id: i32,
     pub email: String,
+    #[sqlx(rename = "password_hash")]
     pub password: String,
     pub first_name: String,
     pub last_name: String,

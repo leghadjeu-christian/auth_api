@@ -4,7 +4,7 @@ import { AuthService } from "../api";
 import { saveToken } from "../auth";
 import type { components } from "../api/types";
 import api from "../api/client";
-
+import "../styles/auth.css";
 
 type LoginRequest = components["schemas"]["LoginRequest"];
 
@@ -28,8 +28,12 @@ export default function Login() {
     setError("");
     try {
       const response = await api.post("login", form);
+      if (response.data && response.data.token) {
+        saveToken(response.data.token); // <-- Save the token!
         navigate("/profile");
-      
+      } else {
+        setError("Invalid credentials");
+      }
     } catch (err: any) {
       setError("Invalid credentials");
     }

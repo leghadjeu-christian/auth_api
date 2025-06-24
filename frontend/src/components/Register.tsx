@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { AuthService } from "../api";
 import type { components } from "../api/types";
 import api from "../api/client";
+import "../styles/auth.css";
+
 type RegisterRequest = components["schemas"]["RegisterRequest"];
 
 export default function Register() {
@@ -26,6 +28,7 @@ export default function Register() {
       await api.post("register", form);
       navigate("/login");
     } catch (err: any) {
+      console.error(err);
       setError("Registration failed");
     }
   };

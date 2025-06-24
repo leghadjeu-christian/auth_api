@@ -1,17 +1,8 @@
 body {
-  font-family: 'Poppins', Arial, sans-serif;
+  font-family: 'Montserrat', sans-serif;
   background: linear-gradient(135deg, #a259c6 0%, #6a11cb 100%);
   min-height: 100vh;
   margin: 0;
-}
-
-h1, h2, h3, .auth-form h2, .profile-container h2 {
-  font-family: 'Bebas Neue', cursive, sans-serif;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: #6a11cb;
-  margin-bottom: 1.5rem;
-  font-size: 2.5rem;
 }
 
 .auth-form, .profile-container {
@@ -26,23 +17,31 @@ h1, h2, h3, .auth-form h2, .profile-container h2 {
   align-items: center;
 }
 
+.auth-form h2, .profile-container h2 {
+  color: #6a11cb;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  letter-spacing: 1px;
+}
+
 .form-group {
   width: 100%;
   margin-bottom: 1.2rem;
 }
 
-.form-group input {
+input, select {
   width: 100%;
   padding: 0.8rem;
   border: 1.5px solid #a259c6;
   border-radius: 8px;
   font-size: 1rem;
-  font-family: 'Poppins', Arial, sans-serif;
+  font-family: 'Montserrat', sans-serif;
   background: #f8f6fc;
   transition: border 0.2s;
 }
 
-.form-group input:focus {
+input:focus, select:focus {
   border-color: #6a11cb;
   outline: none;
 }
@@ -55,13 +54,12 @@ button {
   border: none;
   border-radius: 8px;
   font-size: 1.1rem;
-  font-family: 'Bebas Neue', cursive, sans-serif;
+  font-family: 'Montserrat', sans-serif;
   font-weight: 700;
   cursor: pointer;
   margin-top: 1rem;
   box-shadow: 0 4px 16px 0 rgba(106,17,203,0.10);
   transition: background 0.2s;
-  letter-spacing: 1px;
 }
 
 button:hover {
@@ -103,19 +101,10 @@ button:hover {
   margin-bottom: 1.5rem;
   color: #6a11cb;
   font-size: 1.1rem;
-  font-family: 'Poppins', Arial, sans-serif;
+  font-family: 'Montserrat', sans-serif;
   box-shadow: 0 2px 8px 0 rgba(106,17,203,0.05);
 }
 
 .profile-info div {
   margin-bottom: 0.7rem;
-}
-
-.loading {
-  text-align: center;
-  margin-top: 50px;
-}
-
-.logout-button {
-  margin-top: 20px;
 }

@@ -103,7 +103,7 @@ pub async fn register(
     let hashed_password = hash(&payload.password, DEFAULT_COST).unwrap();
 
     // Insert new user
-    sqlx::query("INSERT INTO users (email, password, first_name, last_name, role) VALUES ($1, $2, $3, $4, $5)")
+    sqlx::query("INSERT INTO users (email, password_hash, first_name, last_name, role) VALUES ($1, $2, $3, $4, $5)")
         .bind(&payload.email)
         .bind(&hashed_password)
         .bind(&payload.first_name)

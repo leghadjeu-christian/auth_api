@@ -32,7 +32,12 @@ async fn main() {
     #[derive(OpenApi)]
     #[openapi(
         info(title = "Auth API", description = "A simple auth API"),
-        paths(auth::login, auth::register, protected::admin_route),
+        paths(
+            auth::login,
+            auth::register,
+            protected::admin_route,
+            protected::profile_route // <-- Add this
+        ),
         components(schemas(
             models::User,
             models::LoginRequest,
@@ -53,6 +58,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/admin", get(protected::admin_route))
+        .route("/profile", get(protected::profile_route))
         .layer(axum::middleware::from_fn_with_state(
             state.clone(),
             auth_middleware,
